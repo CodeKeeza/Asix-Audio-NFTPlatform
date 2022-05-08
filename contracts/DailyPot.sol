@@ -8,8 +8,6 @@ import {SafeTransferLib} from "./libs/SafeTransferLib.sol";
 import {PackedUint144} from "./libs/PackedUint144.sol";
 
 import {Databank} from "./Databank.sol";
-import {MainProtocol} from "./MainProtocol.sol";
-
 
 /*
     Contract responsible for handling the protocol's daily reward pool allocation and distribution
@@ -22,10 +20,6 @@ contract DailyPot is Ownable {
     uint dailyRewards;
     uint lastUpdateBlock;
     bool isDisabled;
-
-    Databank DB;
-    MainProtocol MP;
-    
 
     struct DailyPool {
         address creator;            // 1st slot
@@ -78,20 +72,18 @@ contract DailyPot is Ownable {
     mapping(address => mapping(address => UserEarnings)) public usersEarnings;
 
 
-constructor(Databank _db, MainProtocol _mp) {
-    DB = _db;
-    MP = _mp;
+constructor() {
 }
 
 // called by relay/sentinel tasks to create a new reward pool each day to be earned from
 /// @dev Creates pool and reduces the MainProtocol's holdings
 // TODO: security checks via Main ensuring token holdings for new pool
-function createPool(uint112 _rpd, uint160 _rpdc, address token, uint32 _startTime, uint32 _endTime) external returns(uint poolId) {
+function _createPool(uint112 _rpd, uint160 _rpdc, address _token, uint32 _startTime, uint32 _endTime) internal virtual returns(uint poolId) {
     if(poolId > type(uint24).max) revert DailyPoolOverflow();
-    _saferTransferFrom(token, _rpd);
+    _saferTransferFrom(_token, _rpd);
     pools[poolId] = DailyPool({
             creator: msg.sender,
-            token: token,
+            token: _token,
             dailyCap: _rpdc,
             lastRewardTime: _startTime,
             endTime: _endTime,
@@ -100,10 +92,10 @@ function createPool(uint112 _rpd, uint160 _rpdc, address token, uint32 _startTim
             // Initial value of rewardPerLiquidity can be arbitrarily set to a non-zero value.
             rewardPerLiquidity: type(uint256).max / 2
     });
-    emit DailyPoolSpawned(token, _rpd, poolId , block.timestamp, block.timestamp + 1 days);
+    emit DailyPoolSpawned(_token, _rpd, poolId , block.timestamp, block.timestamp + 1 days);
 }
 
-function updatePool(uint _poolId, int112 _change, uint32 _newStart, uint32 _newEnd) external {
+function _updatePool(uint _poolId, int112 _change, uint32 _newStart, uint32 _newEnd) internal virtual {
     DailyPool storage pool = pools[_poolId];
     if (msg.sender != pool.creator) revert OnlyCreator();
 
@@ -138,7 +130,7 @@ function updatePool(uint _poolId, int112 _change, uint32 _newStart, uint32 _newE
 }
 
 
-function _saferTransferFrom(address token, uint256 amount) internal {
+function _saferTransferFrom(address token, uint256 amount) internal virtual {
 
     if (token.code.length == 0) revert NoToken();
 
@@ -148,18 +140,17 @@ function _saferTransferFrom(address token, uint256 amount) internal {
 
 // Used only by the owner to rescue tokens sent to the contract address
 // additional checks needed to ensure core tokens can't be removed affecting the protocol
-function contractTokenRescue(address _token) external onlyOwner {
+function _contractTokenRescue(address _token) internal virtual  {
     uint bal = IERC20(_token).balanceOf(address(this));
     IERC20(_token).transferFrom(address(this), msg.sender, bal);
 }
 
 // Used to rescue any ether sent to the contract address
-function contractEthRescue() external onlyOwner {
+function _contractEthRescue() internal virtual  {
     payable(msg.sender).transfer(address(this).balance);
 }
 
-receive() external payable{}
-fallback() external payable {} 
-
+receive() external payable virtual{}
+fallback() external payable virtual {} 
 
 }

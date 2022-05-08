@@ -13,8 +13,8 @@ contract Databank is Ownable {
     uint public rewardsPerDay;
     uint public rewardsPerShare;
     uint public rewardsMultiplier;
-
     uint public totalRewards;
+
     uint public userCount; 
     uint public artistCount;
 
@@ -85,7 +85,7 @@ function addUser(address _who, string calldata _name, bool _artist, SubTiersStat
 }
 
 function getUser(uint _index) public view returns(User memory) {
-    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
+    require(userDetails[_index].wallet != NULL_ADDR, "Wallet is not registered");
     User storage user = userDetails[_index];
     return user;
 }
@@ -111,14 +111,12 @@ function getTier(address _who) public view returns (SubTiersStatus){
     require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
     return userMapping[_who].tier;
 }
-
 // sets the user tier
 // address + {0,1,2,3}
 function setTier(address _who, SubTiersStatus _tier) public {
     require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
     userMapping[_who].tier = _tier;
 }
-
 // resets tier to free status
 function resetToFree(address _who) public {
     require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
