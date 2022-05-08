@@ -25,7 +25,9 @@ const App = () => {
           <Link to="/">
             <p style={{ color: '#1DB954' }}> Home </p>
           </Link>
-          <p> Your Music </p>
+          <Link to="/Upload" className="uploadSection">
+            <p style={{ color: '#1DB954' }}> Upload </p>
+          </Link>
           <div className="recentPlayed">
             <p className="recentTitle">RECENTLY PLAYED</p>
             <div className="install">

@@ -1,5 +1,10 @@
 export const library = [
   {
+    title: 'AsixMusic',
+    image: 'https://s2.coinmarketcap.com/static/img/coins/64x64/17795.png',
+    contract: '0x1C45d483515A92fCDD0aa5eaF03dbdf1B7d6898a',
+  },
+  {
     title: 'Hyperspace',
     image:
       'https://www.digitalartsonline.co.uk/cmsdata/slideshow/3776245/beck_-_hyperspace.jpg',

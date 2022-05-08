@@ -15,6 +15,7 @@ import {
   useMoralisFile,
   useWeb3ExecuteFunction,
 } from 'react-moralis'
+import { Link } from 'react-router-dom'
 import { nftAddress } from '../../config.js'
 import nftContract from '../../nft.json'
 
@@ -39,7 +40,7 @@ const items = [
   },
 ]
 
-const UploadSingle = () => {
+const Upload = () => {
   const [royalties, setRoyalties] = useState(royaltiesOptions[0])
   const [sale, setSale] = useState(true)
   const [price, setPrice] = useState(false)
@@ -66,18 +67,15 @@ const UploadSingle = () => {
     const input = e.target.value
     setDescription(input)
   }
-  const handleFile = async (e) => {
-    const file = e.target.files[0]
-    var reader = new FileReader()
-    var url = reader.readAsDataURL(file)
 
-    reader.onloadend = (e) => {
-      setUserFile(reader.result)
+  const handleFile = async (e) => {
+    for (let i = 0; i < file.length; i++) {
+      const file = e.target.files[i]
+      saveFile(itemName, file, { saveIPFS: true })
+      const hash = moralisFile._hash
+      saveHash(hash)
+      console.log(`Uploaded file ${itemName} with hash: `, hash)
     }
-    saveFile(itemName, file, { saveIPFS: true })
-    const hash = moralisFile._hash
-    saveHash(hash)
-    console.log(hash)
   }
 
   const options = {
@@ -343,4 +341,4 @@ const UploadSingle = () => {
   )
 }
 
-export default UploadSingle
+export default Upload
