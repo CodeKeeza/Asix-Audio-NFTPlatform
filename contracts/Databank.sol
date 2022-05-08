@@ -15,27 +15,12 @@ contract Databank is Ownable {
     uint public rewardsMultiplier;
 
     uint public totalRewards;
+    uint public userCount; 
+    uint public artistCount;
 
-    uint public userCount;
+    address immutable NULL_ADDR = 0x0000000000000000000000000000000000000000;
 
 constructor() {}
-
-enum SubTiersStatus {Free, Bronze, Silver, Gold}
-
-SubTiersStatus public subTier;
-
-function getTier(address _who) public view returns (SubTiersStatus){
-    return subTier;
-}
-function setTier(SubTiersStatus _tier) public {
-    subTier = _tier;
-}
-function accessTierItem() public {
-    subTier = SubTiersStatus.Silver; // example
-}
-function resetToFree() public {
-    delete subTier;
-}
 
 struct SubTiersFees {
     uint bronzeFee;
@@ -84,7 +69,7 @@ mapping (address => User) public userMapping;
 function addUser(address _who, string calldata _name, bool _artist, SubTiersStatus _tier) public onlyOwner returns(User memory){
     require(_artist, "Must select true or false");
     require(userMapping[_who].wallet == 0x0000000000000000000000000000000000000000, "Wallet already registered");
-    userCount++;
+    if(_artist == false) { artistCount--;} else { artistCount++; }     userCount++;
     User memory user = User({
         name: _name,
         wallet: _who,
@@ -100,17 +85,44 @@ function addUser(address _who, string calldata _name, bool _artist, SubTiersStat
 }
 
 function getUser(uint _index) public view returns(User memory) {
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
     User storage user = userDetails[_index];
     return user;
 }
 function getUserByAddress(address _who) public view returns(User memory) {
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
     User storage user = userMapping[_who];
     return user;
 }
+// toggles user artist status
 function updateUserArtistStatus(address _who, bool _artist) public returns(User memory) {
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
     User storage user = userMapping[_who];
     user.artist = _artist;
+    if(_artist == false) { artistCount--;} else { artistCount++; }
     return user;
+}
+enum SubTiersStatus {Free, Bronze, Silver, Gold}
+
+SubTiersStatus public subTier;
+
+// grabs the user tier if there is a user
+function getTier(address _who) public view returns (SubTiersStatus){
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
+    return userMapping[_who].tier;
+}
+
+// sets the user tier
+// address + {0,1,2,3}
+function setTier(address _who, SubTiersStatus _tier) public {
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
+    userMapping[_who].tier = _tier;
+}
+
+// resets tier to free status
+function resetToFree(address _who) public {
+    require(userMapping[_who].wallet != NULL_ADDR, "Wallet is not registered");
+    delete userMapping[_who].tier;
 }
 
 }
