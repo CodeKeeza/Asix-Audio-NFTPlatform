@@ -86,7 +86,7 @@ constructor(Databank _db, MainProtocol _mp) {
 // called by relay/sentinel tasks to create a new reward pool each day to be earned from
 /// @dev Creates pool and reduces the MainProtocol's holdings
 // TODO: security checks via Main ensuring token holdings for new pool
-function createPool(uint _rpd, uint160 _rpdc, address token, uint32 _startTime, uint32 _endTime) external returns(uint poolId) {
+function createPool(uint112 _rpd, uint160 _rpdc, address token, uint32 _startTime, uint32 _endTime) external returns(uint poolId) {
     if(poolId > type(uint24).max) revert DailyPoolOverflow();
     _saferTransferFrom(token, _rpd);
     pools[poolId] = DailyPool({
